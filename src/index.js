@@ -1,44 +1,44 @@
-const { ApolloServer, gql } = require("apollo-server");
+const { ApolloServer, gql } = require('apollo-server')
 
 const photos = [
   {
-    id: "0",
-    name: "Dropping the Heart Chute",
-    description: "The heart chute is one of my favorite chutes",
-    category: "ACTION",
-    githubUser: "gPlake"
+    id: '0',
+    name: 'Dropping the Heart Chute',
+    description: 'The heart chute is one of my favorite chutes',
+    category: 'ACTION',
+    githubUser: 'gPlake',
   },
   {
-    id: "1",
-    name: "Enjoying the subshine",
-    category: "SELFIE",
-    githubUser: "sSchmidt"
+    id: '1',
+    name: 'Enjoying the subshine',
+    category: 'SELFIE',
+    githubUser: 'sSchmidt',
   },
   {
-    id: "2",
-    name: "Gunbarrel 25",
-    description: "25 laps on gunbarrel today",
-    category: "LANDSCAPE",
-    githubUser: "sSchmidt"
-  }
-];
+    id: '2',
+    name: 'Gunbarrel 25',
+    description: '25 laps on gunbarrel today',
+    category: 'LANDSCAPE',
+    githubUser: 'sSchmidt',
+  },
+]
 
 const users = [
   {
-    githubLogin: "mHattrup",
-    name: "Mike Hattrup"
+    githubLogin: 'mHattrup',
+    name: 'Mike Hattrup',
   },
   {
-    githubLogin: "gPlake",
-    name: "Glen Plake"
+    githubLogin: 'gPlake',
+    name: 'Glen Plake',
   },
   {
-    githubLogin: "sSchmidt",
-    name: "Scot Schmidt"
-  }
-];
+    githubLogin: 'sSchmidt',
+    name: 'Scot Schmidt',
+  },
+]
 
-let photoIdIndex = photos.length;
+let photoIdIndex = photos.length
 
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
@@ -96,49 +96,49 @@ const typeDefs = gql`
     """
     postPhoto(input: PostPhotoInput): Photo!
   }
-`;
+`
 
 // Provide resolver functions for your schema fields
 const resolvers = {
   // Query Resolver
   Query: {
-    hello: (root, args, context) => "Hello world!",
+    hello: () => 'Hello world!',
     totalPhotos: () => photos.length,
     allPhotos: () => photos,
   },
   // Mutation Resolver
   Mutation: {
     postPhoto(parent, args) {
-      console.log(args);
+      console.log(args)
 
       const newPhoto = {
         id: photoIdIndex++,
         ...args.input,
-      };
+      }
 
-      photos.push(newPhoto);
-      return newPhoto;
-    }
+      photos.push(newPhoto)
+      return newPhoto
+    },
   },
   // Type Resolver
   Photo: {
     url: parent => `http://yoursite.com/img/${parent.id}.jpg`,
     postedBy: parent => {
-      return users.find(u => u.githubLogin === parent.githubUser);
-    }
+      return users.find(u => u.githubLogin === parent.githubUser)
+    },
   },
   User: {
     postedPhotos: parent => {
-      return photos.filter(p => p.githubUser === parent.githubLogin);
-    }
-  }
-};
+      return photos.filter(p => p.githubUser === parent.githubLogin)
+    },
+  },
+}
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
-});
+  resolvers,
+})
 
 server.listen().then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
-});
+  console.log(`🚀 Server ready at ${url}`)
+})
