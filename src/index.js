@@ -1,4 +1,4 @@
-const { ApolloServer, gql } = require('apollo-server')
+const { ApolloServer, UserInputError, gql } = require('apollo-server')
 
 const photos = [
   {
@@ -53,6 +53,8 @@ const typeDefs = gql`
   input PostPhotoInput {
     "Name of the new photo"
     name: String!
+    "Github username for the user who add the pohto"
+    githubUser: String!
     "Category of the new photo, default is PORTRAIT"
     category: PhotoCategory = PORTRAIT
     "Description of the new photo"
@@ -74,7 +76,7 @@ const typeDefs = gql`
     "Name of the photo"
     name: String!
     "Category of the photo"
-    category: PhotoCategory
+    category: PhotoCategory!
     "Description of the photo"
     description: String
     "User who added the pohto"
@@ -109,11 +111,18 @@ const resolvers = {
   // Mutation Resolver
   Mutation: {
     postPhoto(parent, args) {
-      console.log(args)
+      const { input } = args
+      const { githubUser } = input
+
+      if (!users.some(user => user.githubLogin === githubUser)) {
+        return new UserInputError(`There is no user, [${githubUser}]`, {
+          invalidArgs: githubUser,
+        })
+      }
 
       const newPhoto = {
         id: photoIdIndex++,
-        ...args.input,
+        ...input,
       }
 
       photos.push(newPhoto)
@@ -140,5 +149,6 @@ const server = new ApolloServer({
 })
 
 server.listen().then(({ url }) => {
+  // eslint-disable-next-line no-console
   console.log(`🚀 Server ready at ${url}`)
 })
