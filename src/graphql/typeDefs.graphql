@@ -1,0 +1,64 @@
+# Construct a schema, using GraphQL schema language
+
+enum PhotoCategory {
+  SELFIE
+  PORTRAIT
+  ACTION
+  LANDSCAPE
+  GRAPHIC
+}
+
+scalar DateTime
+
+input PostPhotoInput {
+  "Name of the new photo"
+  name: String!
+  "Github username for the user who add the pohto"
+  githubUser: String!
+  "Category of the new photo, default is PORTRAIT"
+  category: PhotoCategory = PORTRAIT
+  "Description of the new photo"
+  description: String
+}
+
+type User {
+  githubLogin: ID!
+  name: String
+  avatar: String
+  postedPhotos: [Photo!]
+  inPhotos: [Photo!]!
+}
+
+type Photo {
+  "Id of the photo"
+  id: ID!
+  "URL of the photo"
+  url: String!
+  "Name of the photo"
+  name: String!
+  "Category of the photo"
+  category: PhotoCategory!
+  "Description of the photo"
+  description: String
+  "User who added the pohto"
+  postedBy: User!
+  "Users who is in the photo"
+  taggedUsers: [User!]!
+  created: DateTime
+}
+
+type Query {
+  hello: String
+  totalPhotos: Int!
+  """
+  Get all the list of photos
+  """
+  allPhotos: [Photo!]!
+}
+
+type Mutation {
+  """
+  Add a new photo
+  """
+  postPhoto(input: PostPhotoInput): Photo!
+}
