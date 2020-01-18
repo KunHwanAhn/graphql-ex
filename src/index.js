@@ -1,4 +1,5 @@
 const { ApolloServer, UserInputError, gql } = require('apollo-server')
+const { GraphQLScalarType } = require('graphql')
 
 const photos = [
   {
@@ -7,12 +8,14 @@ const photos = [
     description: 'The heart chute is one of my favorite chutes',
     category: 'ACTION',
     githubUser: 'gPlake',
+    created: '3-28-1977',
   },
   {
     id: '1',
     name: 'Enjoying the subshine',
     category: 'SELFIE',
     githubUser: 'sSchmidt',
+    created: '1-2-1985',
   },
   {
     id: '2',
@@ -20,6 +23,7 @@ const photos = [
     description: '25 laps on gunbarrel today',
     category: 'LANDSCAPE',
     githubUser: 'sSchmidt',
+    created: '2018-04-15T19:09:57.308Z',
   },
 ]
 
@@ -38,6 +42,13 @@ const users = [
   },
 ]
 
+const tags = [
+  { photoID: '1', userID: 'gPlake' },
+  { photoID: '2', userID: 'sSchmidt' },
+  { photoID: '2', userID: 'mHattrup' },
+  { photoID: '2', userID: 'gPlake' },
+]
+
 let photoIdIndex = photos.length
 
 // Construct a schema, using GraphQL schema language
@@ -49,6 +60,8 @@ const typeDefs = gql`
     LANDSCAPE
     GRAPHIC
   }
+
+  scalar DateTime
 
   input PostPhotoInput {
     "Name of the new photo"
@@ -66,6 +79,7 @@ const typeDefs = gql`
     name: String
     avatar: String
     postedPhotos: [Photo!]
+    inPhotos: [Photo!]!
   }
 
   type Photo {
@@ -81,6 +95,9 @@ const typeDefs = gql`
     description: String
     "User who added the pohto"
     postedBy: User!
+    "Users who is in the photo"
+    taggedUsers: [User!]!
+    created: DateTime
   }
 
   type Query {
@@ -123,6 +140,7 @@ const resolvers = {
       const newPhoto = {
         id: photoIdIndex++,
         ...input,
+        created: new Date(),
       }
 
       photos.push(newPhoto)
@@ -135,12 +153,29 @@ const resolvers = {
     postedBy: parent => {
       return users.find(u => u.githubLogin === parent.githubUser)
     },
+    taggedUsers: parent =>
+      tags
+        .filter(tag => tag.photoID === parent.id)
+        .map(tag => tag.userID)
+        .map(userID => users.find(u => u.githubLogin === userID)),
   },
   User: {
     postedPhotos: parent => {
       return photos.filter(p => p.githubUser === parent.githubLogin)
     },
+    inPhotos: parent =>
+      tags
+        .filter(tag => tag.userID === parent.id)
+        .map(tag => tag.photoID)
+        .map(photoID => photos.find(p => p.id === photoID)),
   },
+  DateTime: new GraphQLScalarType({
+    name: 'DateTime',
+    description: 'A valid date time value.',
+    parseValue: value => new Date(value),
+    serialize: value => new Date(value).toISOString(),
+    parseLiteral: ast => ast.value,
+  }),
 }
 
 const server = new ApolloServer({
