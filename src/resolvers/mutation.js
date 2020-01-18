@@ -50,6 +50,18 @@ module.exports = {
 
     return users
   },
+  async fakeUserAuth(parent, { githubLogin }, { db }) {
+    const user = await db.collection('users').findOne({ githubLogin })
+
+    if (!user) {
+      throw new Error(`Cannot find user with githubLogin "${githubLogin}"`)
+    }
+
+    return {
+      token: user.githubToken,
+      user,
+    }
+  },
   async postPhoto(parent, args, { db, currentUser }) {
     if (!currentUser) {
       return new UserInputError('only an authorized user can post a photo')
