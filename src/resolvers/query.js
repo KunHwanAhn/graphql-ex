@@ -1,9 +1,11 @@
+const { getCollection } = require('./utils')
+
 module.exports = {
   hello: () => 'Hello world!',
-  totalPhotos: (parent, args, { db }) => db.collection('photos').estimatedDocumentCount(),
-  allPhotos: (parent, args, { db }) =>
-    db
-      .collection('photos')
-      .find()
-      .toArray(),
+  async totalPhotos(parent, args, { db }) {
+    return await db.collection('photos').estimatedDocumentCount()
+  },
+  async allPhotos(parent, args, { db }) {
+    return await getCollection(db, 'photos')
+  },
 }

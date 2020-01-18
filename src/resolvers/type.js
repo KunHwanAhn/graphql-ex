@@ -1,27 +1,30 @@
 const { GraphQLScalarType } = require('graphql')
-const { photos, users, tags } = require('../dummy')
+const { getCollection } = require('./utils')
 
 module.exports = {
   Photo: {
-    url: parent => `http://yoursite.com/img/${parent.id}.jpg`,
-    postedBy: parent => {
-      return users.find(u => u.githubLogin === parent.githubUser)
+    id: parent => parent._id,
+    url: parent => `http://yoursite.com/img/${parent._id}.jpg`,
+    async postedBy(parent, args, { db }) {
+      return await db.collection('users').findOne({ githubLogin: parent.userID })
     },
-    taggedUsers: parent =>
-      tags
-        .filter(tag => tag.photoID === parent.id)
-        .map(tag => tag.userID)
-        .map(userID => users.find(u => u.githubLogin === userID)),
+    async taggedUsers(parent, args, { db }) {
+      const tags = await getCollection(db, 'tags', { photoId: parent._id })
+      const users = await getCollection(db, 'users')
+
+      return tags.map(tag => tag.userId).map(userId => users.find(u => u.githubLogin === userId))
+    },
   },
   User: {
-    postedPhotos: parent => {
-      return photos.filter(p => p.githubUser === parent.githubLogin)
+    async postedPhotos(parent, args, { db }) {
+      return await getCollection(db, 'photos', { githubUser: parent.githubLogin })
     },
-    inPhotos: parent =>
-      tags
-        .filter(tag => tag.userID === parent.id)
-        .map(tag => tag.photoID)
-        .map(photoID => photos.find(p => p.id === photoID)),
+    async inPhotos(parent, args, { db }) {
+      const tags = await getCollection(db, 'tags', { userId: parent.id })
+      const photos = await getCollection(db, 'photos')
+
+      return tags.map(tag => tag.photoId).map(photoId => photos.find(p => p.id === photoId))
+    },
   },
   DateTime: new GraphQLScalarType({
     name: 'DateTime',

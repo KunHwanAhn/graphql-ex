@@ -1,10 +1,14 @@
+const { getCollection } = require('./utils')
 const { UserInputError } = require('apollo-server-express')
-const { photos, users } = require('../dummy')
-
-let photoIdIndex = photos.length
 
 module.exports = {
-  postPhoto(parent, args) {
+  async postPhoto(parent, args, { db }) {
+    const users = await getCollection(db, 'users')
+
+    if (users.length === 0) {
+      return new UserInputError(`There is no user, you have to register a new user`)
+    }
+
     const { input } = args
     const { githubUser } = input
 
@@ -15,12 +19,13 @@ module.exports = {
     }
 
     const newPhoto = {
-      id: photoIdIndex++,
       ...input,
       created: new Date(),
     }
 
-    photos.push(newPhoto)
+    const { insertedIds } = await db.collection('photos').insert(newPhoto)
+    newPhoto._id = insertedIds[0]
+
     return newPhoto
   },
 }
