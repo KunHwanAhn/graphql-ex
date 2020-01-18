@@ -1,4 +1,4 @@
-const { UserInputError } = require('apollo-server')
+const { UserInputError } = require('apollo-server-express')
 const { photos, users } = require('../dummy')
 
 let photoIdIndex = photos.length

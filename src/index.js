@@ -1,4 +1,5 @@
-const { ApolloServer } = require('apollo-server')
+const express = require('express')
+const { ApolloServer } = require('apollo-server-express')
 const { readFileSync } = require('fs')
 const { resolve } = require('path')
 
@@ -10,7 +11,11 @@ const server = new ApolloServer({
   resolvers,
 })
 
-server.listen().then(({ url }) => {
+const app = express()
+const port = 4000
+server.applyMiddleware({ app })
+
+app.listen({ port }, () => {
   // eslint-disable-next-line no-console
-  console.log(`🚀 Server ready at ${url}`)
+  console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
 })
