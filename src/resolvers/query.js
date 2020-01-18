@@ -1,7 +1,9 @@
-const { photos } = require('../dummy')
-
 module.exports = {
   hello: () => 'Hello world!',
-  totalPhotos: () => photos.length,
-  allPhotos: () => photos,
+  totalPhotos: (parent, args, { db }) => db.collection('photos').estimatedDocumentCount(),
+  allPhotos: (parent, args, { db }) =>
+    db
+      .collection('photos')
+      .find()
+      .toArray(),
 }
