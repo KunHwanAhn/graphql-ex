@@ -33,7 +33,11 @@ module.exports = {
 
     return { user, token: githubToken }
   },
-  async postPhoto(parent, args, { db }) {
+  async postPhoto(parent, args, { db, currentUser }) {
+    if (!currentUser) {
+      return new UserInputError('only an authorized user can post a photo')
+    }
+
     const users = await getCollection(db, 'users')
 
     if (users.length === 0) {
@@ -51,6 +55,7 @@ module.exports = {
 
     const newPhoto = {
       ...input,
+      userId: currentUser.githubLogin,
       created: new Date(),
     }
 

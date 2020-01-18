@@ -21,6 +21,7 @@ const resolvers = require('./resolvers')
 
     db = client.db()
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.log(`
       Mongo DB Host not found!
       please add DB_HOST environment variable to .env file
@@ -33,7 +34,12 @@ const resolvers = require('./resolvers')
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: async () => ({ db }),
+    context: async ({ req }) => {
+      const { authorization: githubToken } = req.headers
+      const currentUser = await db.collection('users').findOne({ githubToken })
+
+      return { db, currentUser }
+    },
   })
 
   const app = express()
