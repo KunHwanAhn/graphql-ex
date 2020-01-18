@@ -19,7 +19,7 @@ GraphQL Sample Project
    $ npm i
    ```
 3. MongoDB 설치
-   - [MongoDB Community Official Page](https://www.mongodb.com/download-center/community)
+   - [MongoDB Community Edition Page](https://docs.mongodb.com/manual/administration/install-community/)
    - or Use Docker
       ```bash
       docker container run -itd --name gql_mongo -p 27017:27017 mongo:4.2.2
