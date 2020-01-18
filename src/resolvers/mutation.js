@@ -1,8 +1,43 @@
-const { getCollection } = require('./utils')
 const { UserInputError } = require('apollo-server-express')
+const { getCollection } = require('./utils')
+const { authorizeWithGithub } = require('../lib/github')
 
 module.exports = {
-  async postPhoto(parent, args, { db }) {
+  async githubAuth(parent, { code }, { db }) {
+    const {
+      accessToken: githubToken,
+      message,
+      avatar_url: avatar,
+      login: githubLogin,
+      name,
+    } = await authorizeWithGithub({
+      client_id: process.env.CLIENT_ID,
+      client_secret: process.env.CLIENT_SECRET,
+      code,
+    })
+
+    if (message) {
+      throw new Error(message)
+    }
+
+    const latestUserInfo = {
+      name,
+      githubLogin,
+      githubToken,
+      avatar,
+    }
+
+    const {
+      ops: [user],
+    } = await db.collection('users').replaceOne({ githubLogin }, latestUserInfo, { upsert: true })
+
+    return { user, token: githubToken }
+  },
+  async postPhoto(parent, args, { db, currentUser }) {
+    if (!currentUser) {
+      return new UserInputError('only an authorized user can post a photo')
+    }
+
     const users = await getCollection(db, 'users')
 
     if (users.length === 0) {
@@ -20,6 +55,7 @@ module.exports = {
 
     const newPhoto = {
       ...input,
+      userId: currentUser.githubLogin,
       created: new Date(),
     }
 
