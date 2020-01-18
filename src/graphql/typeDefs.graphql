@@ -47,16 +47,25 @@ type Photo {
   created: DateTime
 }
 
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
 type Query {
   hello: String
+  me: User
   totalPhotos: Int!
   """
   Get all the list of photos
   """
   allPhotos: [Photo!]!
+  totalUsers: Int!
+  allUsers: [User!]!
 }
 
 type Mutation {
+  githubAuth(code: String!): AuthPayload!
   """
   Add a new photo
   """
