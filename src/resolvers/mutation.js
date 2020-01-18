@@ -1,3 +1,4 @@
+const axios = require('axios')
 const { UserInputError } = require('apollo-server-express')
 const { getCollection } = require('./utils')
 const { authorizeWithGithub } = require('../lib/github')
@@ -33,6 +34,22 @@ module.exports = {
 
     return { user, token: githubToken }
   },
+  async addFakeUsers(parent, { count }, { db }) {
+    const {
+      data: { results },
+    } = await axios.get(`https://randomuser.me/api?results=${count}`)
+
+    const users = results.map(user => ({
+      githubLogin: user.login.username,
+      name: `${user.name.first} ${user.name.last}`,
+      avatar: user.picture.thumbnail,
+      githubToken: user.login.sha1,
+    }))
+
+    await db.collection('users').insertMany(users)
+
+    return users
+  },
   async postPhoto(parent, args, { db, currentUser }) {
     if (!currentUser) {
       return new UserInputError('only an authorized user can post a photo')
@@ -59,8 +76,8 @@ module.exports = {
       created: new Date(),
     }
 
-    const { insertedIds } = await db.collection('photos').insert(newPhoto)
-    newPhoto._id = insertedIds[0]
+    const { insertedId } = await db.collection('photos').insertOne(newPhoto)
+    newPhoto._id = insertedId
 
     return newPhoto
   },

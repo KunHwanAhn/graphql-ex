@@ -66,6 +66,7 @@ type Query {
 
 type Mutation {
   githubAuth(code: String!): AuthPayload!
+  addFakeUsers(count: Int=1): [User!]!
   """
   Add a new photo
   """
