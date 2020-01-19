@@ -1,6 +1,8 @@
 # graphql-ex
 GraphQL Sample Project
 
+> NOTE: 본 프로젝트는 [ABCD(ABout Coding)](https://abcds.kr/)의 [GraphQL 스터디](https://festa.io/events/849) 문서([#1](https://docs.google.com/presentation/d/1UIDE1NYsIR19BEHsX_skQFHLU3F6VfRPpARpEHK_4p0/edit#slide=id.p), [#2](https://docs.google.com/presentation/d/1hnEzv-Me8ynmA8vIHcwpgOK6D9UGWwfgH3S-ZRVAxkk/edit#slide=id.p))를 기반으로 하고 있습니다. 상세한 내용은 해당 문서를 참조하십시오.
+
 > NOTE: 본 프로젝트는 GraphQL Server만 포함하고 있는 저장소입니다. 샘플용 Client가 필요하면 Client 저장소인 graphql-client-ex를 참조하시면 됩니다.
 
 # 개발환경
